@@ -24,7 +24,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("MCP endpoint: http://0.0.0.0:{}/mcp", cfg.svc_port);
     tracing::info!("Health check: http://0.0.0.0:{}/healthz", cfg.svc_port);
 
-    let app = mcp::router(&cfg);
+    let app = mcp::router(&cfg).await?;
 
     axum::serve(listener, app)
         .await

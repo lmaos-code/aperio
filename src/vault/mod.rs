@@ -121,6 +121,71 @@ impl VaultReader {
             tags,
         })
     }
+
+    pub fn write_note(&self, relative_path: &str, content: &str) -> Result<Note, std::io::Error> {
+        let path = self.root.join(relative_path);
+
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        std::fs::write(&path, content)?;
+
+        let (frontmatter, body) = parse_frontmatter(content);
+        let title = frontmatter
+            .as_ref()
+            .and_then(|f| f.title.clone())
+            .unwrap_or_else(|| {
+                path.file_stem()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string()
+            });
+
+        Ok(Note {
+            path: path.strip_prefix(&self.root).unwrap_or(&path).to_path_buf(),
+            title,
+            content: body,
+            frontmatter,
+        })
+    }
+
+    pub fn delete_note(&self, relative_path: &str) -> Result<PathBuf, std::io::Error> {
+        let path = self.root.join(relative_path);
+
+        let file_name = path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
+
+        let trash_dir = self.root.join(".trash");
+        std::fs::create_dir_all(&trash_dir)?;
+
+        let mut trash_path = trash_dir.join(&file_name);
+        let mut counter = 1usize;
+        while trash_path.exists() {
+            let stem = path
+                .file_stem()
+                .unwrap_or_default()
+                .to_string_lossy();
+            let ext = path
+                .extension()
+                .map(|e| format!(".{}", e.to_string_lossy()))
+                .unwrap_or_default();
+            trash_path = trash_dir.join(format!("{stem}_{counter}{ext}"));
+            counter = counter.saturating_add(1);
+        }
+
+        std::fs::rename(&path, &trash_path)?;
+
+        Ok(trash_path.strip_prefix(&self.root).unwrap_or(&trash_path).to_path_buf())
+    }
+
+    pub fn note_metadata(&self, relative_path: &str) -> Result<NoteSummary, std::io::Error> {
+        let path = self.root.join(relative_path);
+        self.read_note_summary(&path)
+    }
 }
 
 fn parse_frontmatter(content: &str) -> (Option<Frontmatter>, String) {

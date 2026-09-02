@@ -2,13 +2,6 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
 
-use crate::auth::JwtVerifier;
-
-#[derive(Clone)]
-pub struct AppState {
-    pub jwt_verifier: JwtVerifier,
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum AperioError {
     #[error("unauthorized: {0}")]

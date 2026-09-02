@@ -30,6 +30,26 @@ pub struct ListFoldersParams {
     folder: Option<String>,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WriteNoteParams {
+    /// Relative path to the note (e.g. "Daily/2025-01-15.md")
+    path: String,
+    /// Full note content including optional YAML frontmatter
+    content: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct DeleteNoteParams {
+    /// Relative path to the note (e.g. "Daily/2025-01-15.md")
+    path: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct GetNoteMetadataParams {
+    /// Relative path to the note (e.g. "Daily/2025-01-15.md")
+    path: String,
+}
+
 #[derive(Clone)]
 pub struct AperioTools {
     vault: VaultReader,
@@ -165,6 +185,60 @@ impl AperioTools {
         for (name, count) in &folders {
             let display_name = if name.is_empty() { "/" } else { name };
             let _ = writeln!(output, "- **{display_name}** — {count} notes");
+        }
+
+        Ok(CallToolResult::success(vec![ContentBlock::text(output)]))
+    }
+
+    #[tool(description = "Create or overwrite a note with given content. Content should include optional YAML frontmatter (---\\ntitle: ...\\ntags: [...]\\n---).")]
+    async fn write_note(
+        &self,
+        rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<WriteNoteParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let note = self
+            .vault
+            .write_note(&params.path, &params.content)
+            .map_err(|e| McpError::internal_error(format!("Failed to write note: {e}"), None))?;
+
+        Ok(CallToolResult::success(vec![ContentBlock::text(format!(
+            "Note '{}' written to `{}`",
+            note.title,
+            note.path.display()
+        ))]))
+    }
+
+    #[tool(description = "Soft-delete a note by moving it to .trash/ folder")]
+    async fn delete_note(
+        &self,
+        rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<DeleteNoteParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let trash_path = self
+            .vault
+            .delete_note(&params.path)
+            .map_err(|e| McpError::internal_error(format!("Failed to delete note: {e}"), None))?;
+
+        Ok(CallToolResult::success(vec![ContentBlock::text(format!(
+            "Note moved to `{}`",
+            trash_path.display()
+        ))]))
+    }
+
+    #[tool(description = "Read frontmatter and tags without the note body")]
+    async fn get_note_metadata(
+        &self,
+        rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<GetNoteMetadataParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let summary = self
+            .vault
+            .note_metadata(&params.path)
+            .map_err(|e| McpError::internal_error(format!("Failed to read metadata: {e}"), None))?;
+
+        let mut output = format!("# Metadata for `{}`\n\n", summary.path.display());
+        let _ = writeln!(output, "- **Title:** {}", summary.title);
+        if summary.tags.is_empty() {
+            let _ = writeln!(output, "- **Tags:** (none)");
+        } else {
+            let _ = writeln!(output, "- **Tags:** `{}`", summary.tags.join("`, `"));
         }
 
         Ok(CallToolResult::success(vec![ContentBlock::text(output)]))

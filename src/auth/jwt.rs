@@ -1,12 +1,12 @@
 use anyhow::Context;
-use jsonwebtoken::jwk::JwkSet;
+use jsonwebtoken::{decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, Validation};
 use tracing::error;
 
 use crate::mcp::AperioError;
 
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
 pub struct Claims {
-    pub sub: String,
+    pub sub: Option<String>,
     pub exp: usize,
     pub iss: Option<String>,
     pub aud: Option<String>,
@@ -16,7 +16,7 @@ pub struct Claims {
 #[derive(Clone)]
 pub struct JwtVerifier {
     key_set: JwkSet,
-    pub validation: jsonwebtoken::Validation,
+    validation: Validation,
 }
 
 impl JwtVerifier {
@@ -25,17 +25,36 @@ impl JwtVerifier {
             error!("Failed to fetch OIDC JWKS: {e}");
             e
         })?;
+        let mut validation = Validation::new(Algorithm::RS256);
+        validation.validate_aud = false;
         Ok(Self {
             key_set: jwks,
-            validation: jsonwebtoken::Validation::new_for_family(
-                jsonwebtoken::AlgorithmFamily::Rsa,
-            ),
+            validation,
         })
     }
 
-    #[allow(clippy::unused_self)]
-    pub fn verify(&self, _token: &str) -> Result<Claims, AperioError> {
-        Err(AperioError::BadRequest("Not Implemented".to_string()))
+    pub fn verify(&self, token: &str) -> Result<Claims, AperioError> {
+        let header =
+            decode_header(token).map_err(|e| AperioError::Unauthorized(format!("Invalid token header: {e}")))?;
+
+        let kid = header
+            .kid
+            .ok_or_else(|| AperioError::Unauthorized("Token missing kid header".to_string()))?;
+
+        let jwk = self
+            .key_set
+            .keys
+            .iter()
+            .find(|k| k.common.key_id.as_deref() == Some(&kid))
+            .ok_or_else(|| AperioError::Unauthorized(format!("No matching key for kid: {kid}")))?;
+
+        let decoding_key = DecodingKey::from_jwk(jwk)
+            .map_err(|e| AperioError::Unauthorized(format!("Failed to create decoding key: {e}")))?;
+
+        let token_data = decode::<Claims>(token, &decoding_key, &self.validation)
+            .map_err(|e| AperioError::Unauthorized(format!("Token validation failed: {e}")))?;
+
+        Ok(token_data.claims)
     }
 }
 
@@ -51,8 +70,7 @@ async fn get_jwks(url: &str) -> Result<JwkSet, anyhow::Error> {
         .to_string()
         .replace('\"', "");
 
-    let sanitized_url = url::Url::parse(&jwks_uri)
-        .context("Could not parse JWKS URL")?;
+    let sanitized_url = url::Url::parse(&jwks_uri).context("Could not parse JWKS URL")?;
 
     reqwest::get(sanitized_url.to_string())
         .await?
