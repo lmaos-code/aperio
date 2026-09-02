@@ -1,0 +1,151 @@
+{
+  "realm": "aperio",
+  "displayName": "Aperio",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "roles": {
+    "realm": [
+      {
+        "name": "offline_access",
+        "description": "${role_offline-access}"
+      },
+      {
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}"
+      },
+      {
+        "name": "default-roles-aperio",
+        "description": "${role_default-roles}",
+        "composite": true,
+        "composites": {
+          "realm": ["offline_access", "uma_authorization"],
+          "client": {
+            "account": ["view-profile", "manage-account"]
+          }
+        }
+      }
+    ],
+    "client": {
+      "account": [
+        {
+          "name": "view-profile",
+          "description": "${role_view-profile}"
+        },
+        {
+          "name": "manage-account",
+          "description": "${role_manage-account}"
+        }
+      ]
+    }
+  },
+  "defaultRole": {
+    "name": "default-roles-aperio",
+    "description": "${role_default-roles}"
+  },
+  "requiredCredentials": ["password"],
+  "clients": [
+    {
+      "clientId": "account",
+      "name": "${client_account}",
+      "enabled": true
+    },
+    {
+      "clientId": "account-console",
+      "name": "${client_account-console}",
+      "enabled": true
+    },
+    {
+      "clientId": "aperio-frontend",
+      "name": "Aperio Frontend",
+      "description": "Public PKCE client for local frontend development",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*##http://localhost:5173/*"
+      },
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:5173/*", "http://localhost:5174/*"],
+      "webOrigins": ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
+      "adminUrl": "",
+      "rootUrl": "",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "aperio-backend",
+      "name": "Aperio Backend",
+      "description": "Confidential client for backend/API",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-secret",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "access.token.signed.response.alg": "RS256"
+      },
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:8081/*"],
+      "webOrigins": ["*"],
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "username": "dev",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "dev@aperio.local",
+      "firstName": "Dev",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["offline_access", "uma_authorization", "default-roles-aperio"]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin@aperio.local",
+      "firstName": "Admin",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["offline_access", "uma_authorization", "default-roles-aperio"]
+    }
+  ],
+  "scopeMappings": [],
+  "clientScopeMappings": {}
+}
