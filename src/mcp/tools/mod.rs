@@ -27,6 +27,7 @@ pub struct SearchNotesParams {
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListFoldersParams {
     /// Optional subfolder to list (defaults to vault root)
+    #[allow(dead_code)]
     folder: Option<String>,
 }
 

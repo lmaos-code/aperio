@@ -8,21 +8,27 @@ pub enum AperioError {
     Unauthorized(String),
 
     #[error("forbidden: {0}")]
+    #[allow(dead_code)]
     Forbidden(String),
 
     #[error("not found: {0}")]
+    #[allow(dead_code)]
     NotFound(String),
 
     #[error("bad request: {0}")]
+    #[allow(dead_code)]
     BadRequest(String),
 
     #[error("conflict: {0}")]
+    #[allow(dead_code)]
     Conflict(String),
 
     #[error("sync error: {0}")]
+    #[allow(dead_code)]
     Sync(String),
 
     #[error("vault error: {0}")]
+    #[allow(dead_code)]
     Vault(String),
 
     #[error("internal error: {0}")]

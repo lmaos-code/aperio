@@ -1,0 +1,31 @@
+<div class="card">
+  <div class="card-label">Notes</div>
+  <div class="card-value">{{ note_count }}</div>
+</div>
+<div class="card">
+  <div class="card-label">Folders</div>
+  <div class="card-value">{{ folder_count }}</div>
+</div>
+<div class="card card-full">
+  <div class="card-label">Details</div>
+  <div class="detail">
+    <span class="detail-key">Uptime</span>
+    <span class="detail-value">{{ uptime }}</span>
+  </div>
+  <div class="detail">
+    <span class="detail-key">Vault</span>
+    <span class="detail-value">{{ vault_path }}</span>
+  </div>
+  <div class="detail">
+    <span class="detail-key">Sync</span>
+    <span class="detail-value">{{ sync_status }}</span>
+  </div>
+  <div class="detail">
+    <span class="detail-key">Last modified</span>
+    <span class="detail-value">{{ last_modified }}</span>
+  </div>
+  <div class="detail">
+    <span class="detail-key">Auth</span>
+    <span class="detail-value">{{ auth_status }}</span>
+  </div>
+</div>

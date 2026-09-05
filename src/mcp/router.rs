@@ -7,6 +7,7 @@ use rmcp::transport::{
 use crate::{
     auth::{AuthState, JwtVerifier, protected_resource_metadata, validate_auth},
     config::Config,
+    status::{status_page, status_stats},
     vault::VaultReader,
 };
 
@@ -23,7 +24,21 @@ pub async fn router(cfg: &Config) -> anyhow::Result<Router> {
             StreamableHttpServerConfig::default(),
         );
 
-    let mut mcp_router = Router::new().nest_service("/mcp", mcp_service);
+    let well_known = Router::new().route(
+        "/.well-known/oauth-protected-resource",
+        axum::routing::get(protected_resource_metadata),
+    );
+
+    let status_routes = Router::new()
+        .route("/status", axum::routing::get(status_page))
+        .route("/status/stats", axum::routing::get(status_stats));
+
+    let mut app = Router::new()
+        .route("/healthz", axum::routing::get(healthz))
+        .merge(well_known)
+        .merge(status_routes)
+        .nest_service("/mcp", mcp_service)
+        .with_state(cfg.clone());
 
     if cfg.auth_enabled {
         tracing::info!("OIDC authentication enabled");
@@ -41,24 +56,13 @@ pub async fn router(cfg: &Config) -> anyhow::Result<Router> {
             resource_url,
             auth_server_url,
         };
-        mcp_router = mcp_router.layer(axum::middleware::from_fn_with_state(
+        app = app.layer(axum::middleware::from_fn_with_state(
             auth_state,
             validate_auth,
         ));
     } else {
         tracing::warn!("OIDC authentication DISABLED (dev mode)");
     }
-
-    let well_known = Router::new().route(
-        "/.well-known/oauth-protected-resource",
-        axum::routing::get(protected_resource_metadata),
-    );
-
-    let app = Router::new()
-        .route("/healthz", axum::routing::get(healthz))
-        .merge(well_known)
-        .merge(mcp_router)
-        .with_state(cfg.clone());
 
     Ok(app)
 }

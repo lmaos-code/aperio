@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    time::{Duration, SystemTime},
+};
 
 use serde::{Deserialize, Serialize};
 use tracing::debug;
@@ -24,6 +27,7 @@ pub struct NoteSummary {
     pub path: PathBuf,
     pub title: String,
     pub tags: Vec<String>,
+    pub modified: SystemTime,
 }
 
 #[derive(Clone)]
@@ -115,10 +119,13 @@ impl VaultReader {
 
         let relative = path.strip_prefix(&self.root).unwrap_or(path).to_path_buf();
 
+        let modified = std::fs::metadata(path)?.modified()?;
+
         Ok(NoteSummary {
             path: relative,
             title,
             tags,
+            modified,
         })
     }
 
@@ -165,10 +172,7 @@ impl VaultReader {
         let mut trash_path = trash_dir.join(&file_name);
         let mut counter = 1usize;
         while trash_path.exists() {
-            let stem = path
-                .file_stem()
-                .unwrap_or_default()
-                .to_string_lossy();
+            let stem = path.file_stem().unwrap_or_default().to_string_lossy();
             let ext = path
                 .extension()
                 .map(|e| format!(".{}", e.to_string_lossy()))
@@ -179,12 +183,39 @@ impl VaultReader {
 
         std::fs::rename(&path, &trash_path)?;
 
-        Ok(trash_path.strip_prefix(&self.root).unwrap_or(&trash_path).to_path_buf())
+        Ok(trash_path
+            .strip_prefix(&self.root)
+            .unwrap_or(&trash_path)
+            .to_path_buf())
     }
 
     pub fn note_metadata(&self, relative_path: &str) -> Result<NoteSummary, std::io::Error> {
         let path = self.root.join(relative_path);
         self.read_note_summary(&path)
+    }
+
+    pub fn last_modified(&self) -> Option<SystemTime> {
+        let mut notes = Vec::new();
+        self.walk_dir(&self.root, &mut notes).ok()?;
+
+        let pivot = notes.first()?;
+        Some(notes.iter().fold(pivot.modified, |acc, elem| {
+            if elem.modified.gt(&acc) {
+                return elem.modified;
+            }
+            acc
+        }))
+    }
+
+    pub fn sync_heartbeat(&self) -> Option<Duration> {
+        let heartbeat_path = self.root.join(".sync-heartbeat");
+        let content = std::fs::read_to_string(heartbeat_path).ok()?;
+        let trimmed = content.trim();
+
+        let ts = parse_iso8601(trimmed)?;
+        let now = SystemTime::now();
+        let elapsed = now.duration_since(ts).ok()?;
+        Some(elapsed)
     }
 }
 
@@ -255,4 +286,74 @@ pub fn count_notes_recursive(
     }
 
     Ok(())
+}
+
+fn parse_iso8601(s: &str) -> Option<SystemTime> {
+    let s = s.strip_suffix('Z').unwrap_or(s);
+
+    let (date_part, time_part) = s.split_once('T')?;
+
+    let mut date_components = date_part.split('-').filter_map(|p| p.parse::<u32>().ok());
+    let year = date_components.next()?;
+    let month = date_components.next()?;
+    let day = date_components.next()?;
+
+    let time_str = time_part.strip_suffix('Z').unwrap_or(time_part);
+    let mut time_components = time_str
+        .split([':', '.'])
+        .filter_map(|p| p.parse::<u32>().ok());
+    let hours = time_components.next()?;
+    let minutes = time_components.next().unwrap_or(0);
+    let seconds = time_components.next().unwrap_or(0);
+
+    let days_from_epoch = days_since_epoch(year, month, day)?;
+    let total_secs = days_from_epoch
+        .checked_mul(86400)?
+        .checked_add(u64::from(hours).checked_mul(3600)?)?
+        .checked_add(u64::from(minutes).checked_mul(60)?)?
+        .checked_add(u64::from(seconds))?;
+
+    SystemTime::UNIX_EPOCH.checked_add(Duration::from_secs(total_secs))
+}
+
+fn days_since_epoch(year: u32, month: u32, day: u32) -> Option<u64> {
+    if !(1..=12).contains(&month) || !(1..=31).contains(&day) {
+        return None;
+    }
+
+    let y = i64::from(year);
+    let m = i64::from(month);
+    let d = i64::from(day);
+
+    let adjusted_month = m.checked_sub(3)?;
+    let adjusted_year = if adjusted_month < 0 {
+        y.checked_sub(1)?
+    } else {
+        y
+    };
+    let adjusted_month = if adjusted_month < 0 {
+        adjusted_month.checked_add(12)?
+    } else {
+        adjusted_month
+    };
+
+    let era = adjusted_year.div_euclid(400);
+    let yoe = adjusted_year.checked_sub(era.checked_mul(400)?)?;
+    let doy = (153_i64
+        .checked_mul(adjusted_month.checked_add(2)?)?
+        .checked_add(2)?)
+    .div_euclid(5)
+    .checked_add(d)?
+    .checked_sub(1)?;
+    let doe = yoe
+        .checked_mul(365)?
+        .checked_add(yoe.div_euclid(4))?
+        .checked_sub(yoe.div_euclid(100))?
+        .checked_add(doy)?;
+    let days = era
+        .checked_mul(146_097)?
+        .checked_add(doe)?
+        .checked_sub(719_468)?;
+
+    u64::try_from(days).ok()
 }

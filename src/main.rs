@@ -1,6 +1,7 @@
 mod auth;
 mod config;
 mod mcp;
+mod status;
 mod vault;
 
 use anyhow::Context;

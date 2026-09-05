@@ -1,6 +1,6 @@
-mod mcp;
+mod router;
 pub mod tools;
 pub mod types;
 
-pub use mcp::router;
+pub use router::router;
 pub use types::AperioError;
