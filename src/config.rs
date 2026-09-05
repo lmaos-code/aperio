@@ -1,5 +1,24 @@
 use std::time::Instant;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SyncCheck {
+    None,
+    File,
+    Heartbeat,
+    Kubernetes,
+}
+
+impl SyncCheck {
+    pub fn from_env() -> Self {
+        match std::env::var("SYNC_CHECK").as_deref() {
+            Ok("file") => Self::File,
+            Ok("heartbeat") => Self::Heartbeat,
+            Ok("kubernetes") => Self::Kubernetes,
+            _ => Self::None,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Config {
     pub issuer_url: String,
@@ -8,6 +27,11 @@ pub struct Config {
     pub auth_enabled: bool,
     pub started_at: Instant,
     pub version: String,
+    pub sync_check: SyncCheck,
+    pub public_url: Option<String>,
+    pub required_audience: Option<String>,
+    pub required_issuer: Option<String>,
+    pub required_claims: Vec<String>,
 }
 
 impl Config {
@@ -25,6 +49,17 @@ impl Config {
             auth_enabled,
             started_at: Instant::now(),
             version: std::env::var("APERIO_VERSION").unwrap_or_else(|_| "development".into()),
+            sync_check: SyncCheck::from_env(),
+            public_url: std::env::var("PUBLIC_URL").ok().filter(|s| !s.is_empty()),
+            required_audience: std::env::var("OIDC_AUDIENCE")
+                .ok()
+                .filter(|s| !s.is_empty()),
+            required_issuer: std::env::var("OIDC_ISSUER").ok().filter(|s| !s.is_empty()),
+            required_claims: std::env::var("OIDC_REQUIRED_CLAIMS")
+                .ok()
+                .filter(|s| !s.is_empty())
+                .map(|s| s.split(',').map(String::from).collect())
+                .unwrap_or_default(),
         }
     }
 }
