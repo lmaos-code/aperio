@@ -54,6 +54,22 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  sync:
+    image: ghcr.io/belphemur/obsidian-headless-sync-docker:latest
+    environment:
+      OBSIDIAN_AUTH_TOKEN: ${OBSIDIAN_AUTH_TOKEN}
+      VAULT_NAME: ${VAULT_NAME:-Obsidian}
+      VAULT_HOST_PATH: ${VAULT_HOST_PATH:-./dev/vault}
+      VAULT_PATH: /vault
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      DEVICE_NAME: aperio-dev
+      CONFLICT_STRATEGY: merge
+      SYNC_MODE: bidirectional
+    volumes:
+      - ../dev/vault:/vault
+    profiles:
+      - sync
 volumes:
   pgdata:
   pgadmin:

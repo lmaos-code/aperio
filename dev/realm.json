@@ -220,41 +220,69 @@
          ],
          "fullScopeAllowed": true
       },
-      {
-         "clientId": "aperio-backend",
-         "name": "Aperio Backend",
-         "description": "Confidential client for backend/API",
-         "enabled": true,
-         "clientAuthenticatorType": "client-secret",
-         "secret": "dev-secret",
-         "publicClient": false,
-         "standardFlowEnabled": true,
-         "implicitFlowEnabled": false,
-         "directAccessGrantsEnabled": true,
-         "serviceAccountsEnabled": true,
-         "protocol": "openid-connect",
-         "defaultClientScopes": [
-            "openid",
-            "profile",
-            "email",
-            "basic"
-         ],
-         "optionalClientScopes": [
-            "mcp:read",
-            "mcp:write"
-         ],
-         "attributes": {
-            "access.token.signed.response.alg": "RS256"
-         },
-         "redirectUris": [
-            "http://localhost:3000/*",
-            "http://localhost:8081/*"
-         ],
-         "webOrigins": [
-            "*"
-         ],
-         "fullScopeAllowed": true
-      }
+       {
+          "clientId": "aperio-backend",
+          "name": "Aperio Backend",
+          "description": "Confidential client for backend/API",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "dev-secret",
+          "publicClient": false,
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": true,
+          "serviceAccountsEnabled": true,
+          "protocol": "openid-connect",
+          "defaultClientScopes": [
+             "openid",
+             "profile",
+             "email",
+             "basic"
+          ],
+          "optionalClientScopes": [
+             "mcp:read",
+             "mcp:write"
+          ],
+          "attributes": {
+             "access.token.signed.response.alg": "RS256"
+          },
+          "redirectUris": [
+             "http://localhost:3000/*",
+             "http://localhost:8081/*"
+          ],
+          "webOrigins": [
+             "*"
+          ],
+          "fullScopeAllowed": true
+       },
+       {
+          "clientId": "aperio-m2m",
+          "name": "Aperio Machine-to-Machine",
+          "description": "Confidential client for CI/CD, scheduled agents, and service-to-service access",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "m2m-secret",
+          "publicClient": false,
+          "standardFlowEnabled": false,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": false,
+          "serviceAccountsEnabled": true,
+          "protocol": "openid-connect",
+          "defaultClientScopes": [
+             "openid",
+             "basic"
+          ],
+          "optionalClientScopes": [
+             "mcp:read",
+             "mcp:write"
+          ],
+          "attributes": {
+             "access.token.signed.response.alg": "RS256"
+          },
+          "redirectUris": [],
+          "webOrigins": [],
+          "fullScopeAllowed": true
+       }
    ],
    "users": [
       {
