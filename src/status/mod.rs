@@ -2,7 +2,7 @@ use std::path::Path;
 use std::time::Duration;
 
 use askama::Template;
-use axum::extract::State;
+use axum::extract::Extension;
 use axum::response::{Html, IntoResponse};
 
 use crate::config::{Config, SyncCheck};
@@ -33,7 +33,7 @@ struct StatsTemplate {
     auth_status: &'static str,
 }
 
-pub async fn status_page(State(cfg): State<Config>) -> impl IntoResponse {
+pub async fn status_page(Extension(cfg): Extension<Config>) -> impl IntoResponse {
     let vault = VaultReader::new(std::path::PathBuf::from(&cfg.vault_dir));
     let (note_count, folder_count) = vault_stats(vault.root());
 
@@ -62,7 +62,7 @@ pub async fn status_page(State(cfg): State<Config>) -> impl IntoResponse {
     )
 }
 
-pub async fn status_stats(State(cfg): State<Config>) -> impl IntoResponse {
+pub async fn status_stats(Extension(cfg): Extension<Config>) -> impl IntoResponse {
     let vault = VaultReader::new(std::path::PathBuf::from(&cfg.vault_dir));
     let (note_count, folder_count) = vault_stats(vault.root());
 

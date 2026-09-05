@@ -24,27 +24,12 @@ pub async fn router(cfg: &Config) -> anyhow::Result<Router> {
             StreamableHttpServerConfig::default(),
         );
 
-    let well_known = Router::new().route(
-        "/.well-known/oauth-protected-resource",
-        axum::routing::get(protected_resource_metadata),
-    );
-
-    let status_routes = Router::new()
-        .route("/status", axum::routing::get(status_page))
-        .route("/status/stats", axum::routing::get(status_stats));
-
-    let mut app = Router::new()
-        .route("/healthz", axum::routing::get(healthz))
-        .merge(well_known)
-        .merge(status_routes)
-        .nest_service("/mcp", mcp_service)
-        .with_state(cfg.clone());
+    let mut protected = Router::new().nest_service("/mcp", mcp_service);
 
     if cfg.auth_enabled {
         tracing::info!("OIDC authentication enabled");
         let verifier = JwtVerifier::new(cfg).await?;
 
-        let resource_url = format!("http://localhost:{}", cfg.svc_port);
         let auth_server_url = cfg
             .issuer_url
             .trim_end_matches('/')
@@ -53,16 +38,25 @@ pub async fn router(cfg: &Config) -> anyhow::Result<Router> {
 
         let auth_state = AuthState {
             verifier: Some(verifier),
-            resource_url,
             auth_server_url,
         };
-        app = app.layer(axum::middleware::from_fn_with_state(
-            auth_state,
-            validate_auth,
-        ));
+        protected = protected
+            .layer(axum::middleware::from_fn(validate_auth))
+            .layer(axum::extract::Extension(auth_state));
     } else {
         tracing::warn!("OIDC authentication DISABLED (dev mode)");
     }
+
+    let app = Router::new()
+        .route("/healthz", axum::routing::get(healthz))
+        .route(
+            "/.well-known/oauth-protected-resource",
+            axum::routing::get(protected_resource_metadata),
+        )
+        .route("/status", axum::routing::get(status_page))
+        .route("/status/stats", axum::routing::get(status_stats))
+        .merge(protected)
+        .layer(axum::extract::Extension(cfg.clone()));
 
     Ok(app)
 }
