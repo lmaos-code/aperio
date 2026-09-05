@@ -1,0 +1,22 @@
+# Build artifacts
+target/
+
+# Development files
+.git/
+.gitignore
+.env
+*.md
+LICENSE
+
+# Dev infrastructure
+dev/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
