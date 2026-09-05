@@ -1,0 +1,13 @@
+apiVersion: v2
+name: aperio
+description: A self-hosted MCP server that transforms an Obsidian vault into a persistent, remotely accessible knowledge base for AI agents.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - mcp
+  - obsidian
+  - ai
+  - knowledge-base
+maintainers:
+  - name: Aperio

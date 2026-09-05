@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aperio.configMapName" . }}
+  labels:
+    {{- include "aperio.labels" . | nindent 4 }}
+data:
+  MCP_PORT: {{ .Values.aperio.mcpPort | quote }}
+  OBSIDIAN_VAULT_DIR: {{ .Values.aperio.vaultDir | quote }}
+  RUST_LOG: {{ .Values.aperio.logLevel | quote }}
+  SYNC_CHECK: {{ .Values.aperio.syncCheck | quote }}
+  {{- if .Values.aperio.publicUrl }}
+  PUBLIC_URL: {{ .Values.aperio.publicUrl | quote }}
+  {{- end }}
+  {{- if .Values.auth.audience }}
+  OIDC_AUDIENCE: {{ .Values.auth.audience | quote }}
+  {{- end }}
+  {{- if .Values.auth.requiredIssuer }}
+  OIDC_ISSUER: {{ .Values.auth.requiredIssuer | quote }}
+  {{- end }}
+  {{- if .Values.auth.requiredClaims }}
+  OIDC_REQUIRED_CLAIMS: {{ .Values.auth.requiredClaims | quote }}
+  {{- end }}

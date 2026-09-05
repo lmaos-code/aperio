@@ -1,0 +1,150 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aperio.fullname" . }}
+  labels:
+    {{- include "aperio.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aperio.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "aperio.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "aperio.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: aperio
+          image: {{ include "aperio.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.aperio.mcpPort }}
+              protocol: TCP
+          env:
+            - name: MCP_PORT
+              value: {{ .Values.aperio.mcpPort | quote }}
+            - name: OBSIDIAN_VAULT_DIR
+              value: {{ .Values.aperio.vaultDir | quote }}
+            - name: RUST_LOG
+              value: {{ .Values.aperio.logLevel | quote }}
+            - name: SYNC_CHECK
+              value: {{ .Values.aperio.syncCheck | quote }}
+            {{- if .Values.auth.enabled }}
+            - name: OIDC_ISSUER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "aperio.secretName" . }}
+                  key: oidc-issuer-url
+            {{- if .Values.auth.audience }}
+            - name: OIDC_AUDIENCE
+              value: {{ .Values.auth.audience | quote }}
+            {{- end }}
+            {{- if .Values.auth.requiredIssuer }}
+            - name: OIDC_ISSUER
+              value: {{ .Values.auth.requiredIssuer | quote }}
+            {{- end }}
+            {{- if .Values.auth.requiredClaims }}
+            - name: OIDC_REQUIRED_CLAIMS
+              value: {{ .Values.auth.requiredClaims | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.aperio.publicUrl }}
+            - name: PUBLIC_URL
+              value: {{ .Values.aperio.publicUrl | quote }}
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: vault
+              mountPath: {{ .Values.aperio.vaultDir }}
+              readOnly: true
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- if .Values.sync.enabled }}
+        - name: sync
+          image: {{ include "aperio.syncImage" . }}
+          imagePullPolicy: {{ .Values.syncImage.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            - name: VAULT_PATH
+              value: {{ .Values.sync.vaultPath | quote }}
+            - name: SERVER_URL
+              value: {{ .Values.sync.serverUrl | quote }}
+            - name: DEVICE_NAME
+              value: {{ .Values.sync.deviceName | quote }}
+            {{- if .Values.sync.deviceId }}
+            - name: DEVICE_ID
+              value: {{ .Values.sync.deviceId | quote }}
+            {{- end }}
+            {{- if .Values.sync.token }}
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "aperio.secretName" . }}
+                  key: sync-token
+            {{- end }}
+            {{- with .Values.syncExtraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: vault
+              mountPath: {{ .Values.aperio.vaultDir }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      volumes:
+        - name: vault
+          persistentVolumeClaim:
+            claimName: {{ include "aperio.pvcName" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

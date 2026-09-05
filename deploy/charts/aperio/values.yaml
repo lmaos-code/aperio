@@ -1,0 +1,159 @@
+# Default values for Aperio
+
+# -- Number of replicas (should be 1, Aperio is not horizontally scalable)
+replicaCount: 1
+
+image:
+  # -- Aperio container image repository
+  repository: aperio
+  # -- Aperio container image tag (defaults to appVersion)
+  tag: ""
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+syncImage:
+  # -- Obsidian Headless Sync container image repository
+  repository: ghcr.io/belphemur/obsidian-headless-sync-docker
+  # -- Image tag
+  tag: latest
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+# -- Override the release name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a service account
+  create: true
+  # -- Annotations for the service account
+  annotations: {}
+  # -- Service account name (generated if not set)
+  name: ""
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# -- Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  # -- Kubernetes Service type
+  type: ClusterIP
+  # -- Service port
+  port: 80
+  # -- Container target port (should match MCP_PORT)
+  targetPort: 3000
+
+# -- Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: aperio.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: aperio-tls
+  #    hosts:
+  #      - aperio.local
+
+# -- Resource limits and requests
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# -- PersistentVolumeClaim for vault storage
+persistence:
+  enabled: true
+  # -- Storage class name (uses default if not set)
+  storageClass: ""
+  # -- PVC access modes
+  accessModes:
+    - ReadWriteOnce
+  # -- PVC size
+  size: 10Gi
+
+# -- Aperio application configuration
+aperio:
+  # -- MCP server port
+  mcpPort: 3000
+  # -- Public URL for OAuth metadata (derived from request Host if not set)
+  publicUrl: ""
+  # -- Vault directory inside the container
+  vaultDir: /vault
+  # -- Log level (trace, debug, info, warn, error)
+  logLevel: info
+  # -- Sync health check method (none, file, heartbeat, kubernetes)
+  syncCheck: file
+
+# -- OIDC authentication configuration
+auth:
+  # -- Enable OIDC authentication
+  enabled: false
+  # -- OIDC issuer URL
+  issuerUrl: ""
+  # -- Required audience claim
+  audience: ""
+  # -- Required issuer claim
+  requiredIssuer: ""
+  # -- Required claims (comma-separated, e.g. "sub,email")
+  requiredClaims: ""
+
+# -- Obsidian Headless Sync configuration
+sync:
+  # -- Enable the sync sidecar container
+  enabled: true
+  # -- Obsidian sync server URL
+  serverUrl: "https://api.obsidian.md"
+  # -- Vault path on the sync server
+  vaultPath: ""
+  # -- Authentication token
+  token: ""
+  # -- Device name
+  deviceName: "aperio-k8s"
+  # -- Device ID (generate a UUID if not set)
+  deviceId: ""
+
+# -- Additional environment variables for Aperio
+extraEnv: []
+
+# -- Additional environment variables for sync container
+syncExtraEnv: []
