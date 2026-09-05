@@ -39,6 +39,28 @@ The containers share storage via a PVC mounted at `/vault/`. Kubernetes manages 
 - **Authorization Code + PKCE** — for interactive user sessions (Claude, browser-based agents)
 - **Client Credentials** — for machine-to-machine automation (scheduled agents, CI/CD pipelines)
 
+### Client Credentials Flow
+
+For service-to-service access without user interaction:
+
+1. **Register a client** in your identity provider with `serviceAccountsEnabled: true`
+2. **Obtain a token** using the client credentials grant:
+   ```bash
+   curl -X POST https://keycloak.example.com/realms/aperio/protocol/openid-connect/token \
+     -d "grant_type=client_credentials" \
+     -d "client_id=your-m2m-client" \
+     -d "client_secret=your-secret"
+   ```
+3. **Use the token** to access the MCP endpoint:
+   ```bash
+   curl -X POST https://your-aperio.example.com/mcp \
+     -H "Authorization: Bearer <access_token>" \
+     -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","method":"initialize",...}'
+   ```
+
+The server verifies JWT tokens regardless of grant type — client credentials tokens work identically to user tokens.
+
 ## Deployment
 
 Runs as a Kubernetes pod with two containers and a PersistentVolumeClaim:
