@@ -123,6 +123,10 @@ aperio:
   logLevel: info
   # -- Sync health check method (none, file, heartbeat, kubernetes)
   syncCheck: file
+  # -- MCP realm for WWW-Authenticate header
+  mcpRealm: mcp
+  # -- MCP scopes (comma-separated, e.g. "mcp:read,mcp:write")
+  mcpScopes: "mcp:read,mcp:write"
 
 # -- OIDC authentication configuration
 auth:

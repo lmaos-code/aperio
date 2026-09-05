@@ -32,6 +32,8 @@ pub struct Config {
     pub required_audience: Option<String>,
     pub required_issuer: Option<String>,
     pub required_claims: Vec<String>,
+    pub mcp_realm: String,
+    pub mcp_scopes: Vec<String>,
 }
 
 impl Config {
@@ -60,6 +62,15 @@ impl Config {
                 .filter(|s| !s.is_empty())
                 .map(|s| s.split(',').map(String::from).collect())
                 .unwrap_or_default(),
+            mcp_realm: std::env::var("MCP_REALM")
+                .unwrap_or_else(|_| "mcp".into()),
+            mcp_scopes: std::env::var("MCP_SCOPES")
+                .ok()
+                .filter(|s| !s.is_empty())
+                .map_or_else(
+                    || vec!["mcp:read".into(), "mcp:write".into()],
+                    |s| s.split(',').map(String::from).collect(),
+                ),
         }
     }
 }

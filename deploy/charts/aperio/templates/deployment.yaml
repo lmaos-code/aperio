@@ -47,6 +47,10 @@ spec:
               value: {{ .Values.aperio.logLevel | quote }}
             - name: SYNC_CHECK
               value: {{ .Values.aperio.syncCheck | quote }}
+            - name: MCP_REALM
+              value: {{ .Values.aperio.mcpRealm | quote }}
+            - name: MCP_SCOPES
+              value: {{ .Values.aperio.mcpScopes | quote }}
             {{- if .Values.auth.enabled }}
             - name: OIDC_ISSUER_URL
               valueFrom:
