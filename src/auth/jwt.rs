@@ -17,6 +17,7 @@ pub struct Claims {
 pub struct JwtVerifier {
     key_set: JwkSet,
     validation: Validation,
+    required_claims: Vec<String>,
 }
 
 impl JwtVerifier {
@@ -25,11 +26,23 @@ impl JwtVerifier {
             error!("Failed to fetch OIDC JWKS: {e}");
             e
         })?;
+
         let mut validation = Validation::new(Algorithm::RS256);
-        validation.validate_aud = false;
+        validation.leeway = 30;
+
+        if let Some(ref audience) = cfg.required_audience {
+            validation.validate_aud = true;
+            validation.set_audience(&[audience.as_str()]);
+        }
+
+        if let Some(ref issuer) = cfg.required_issuer {
+            validation.set_issuer(&[issuer.as_str()]);
+        }
+
         Ok(Self {
             key_set: jwks,
             validation,
+            required_claims: cfg.required_claims.clone(),
         })
     }
 
@@ -54,7 +67,28 @@ impl JwtVerifier {
         let token_data = decode::<Claims>(token, &decoding_key, &self.validation)
             .map_err(|e| AperioError::Unauthorized(format!("Token validation failed: {e}")))?;
 
-        Ok(token_data.claims)
+        let claims = token_data.claims;
+
+        for required_claim in &self.required_claims {
+            if !has_claim(&claims, required_claim) {
+                return Err(AperioError::Unauthorized(format!(
+                    "Missing required claim: {required_claim}"
+                )));
+            }
+        }
+
+        Ok(claims)
+    }
+}
+
+fn has_claim(claims: &Claims, claim_name: &str) -> bool {
+    match claim_name {
+        "sub" => claims.sub.is_some(),
+        "email" => claims.email.is_some(),
+        "aud" => claims.aud.is_some(),
+        "iss" => claims.iss.is_some(),
+        "exp" => true,
+        _ => false,
     }
 }
 
