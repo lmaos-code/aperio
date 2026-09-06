@@ -108,8 +108,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ needs.release.outputs.tag }}
-            type=raw,value=${{ needs.release.outputs.version }}
+            type=semver,pattern=v{{version}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern=v{{major}},value=${{ needs.release.outputs.tag }}
             type=sha
 
       - name: Build and push
