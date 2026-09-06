@@ -137,9 +137,13 @@ jobs:
 
       - name: Create manifest and push
         run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          MAJOR="${VERSION%%.*}"
+          MINOR="${VERSION#*.}"
+          MINOR="${MINOR%%.*}"
+
           # Create multi-arch manifest for each tag
-          TAGS="v${{ needs.release.outputs.version }} v${{ needs.release.outputs.version | regex_replace('\.[0-9]+$', '') }} v${{ needs.release.outputs.version | regex_replace('\.[0-9]+\.[0-9]+$', '') }}"
-          for tag in $TAGS; do
+          for tag in "v${VERSION}" "v${MAJOR}.${MINOR}" "v${MAJOR}"; do
             docker buildx imagetools create \
               -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${tag} \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64 \
