@@ -62,6 +62,7 @@ impl AperioTools {
     }
 }
 
+#[allow(clippy::unused_async_trait_impl)]
 #[tool_router(server_handler)]
 impl AperioTools {
     #[tool(description = "List all notes in the vault, optionally filtered by folder")]
