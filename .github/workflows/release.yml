@@ -72,19 +72,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-
-      - run: go build -o semrel github.com/nrkno/github-action-semantic-release/cmd/semrel
-
       - id: semrel
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./semrel release
-
-      - run: ./semrel notes >> $GITHUB_STEP_SUMMARY
-        if: steps.semrel.outputs.released == 'true'
+        uses: nrkno/github-action-semantic-release@v2
+        with:
+          subcommand: release
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
     name: Build & Push Docker Image
