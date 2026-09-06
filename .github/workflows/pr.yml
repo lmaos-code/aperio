@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: nrkno/github-action-semantic-release@v2
+      - uses: nrkno/github-action-semantic-release@a4af40eb13b5eb6133b787af0031a0a19d87ff9e
         with:
           subcommand: lint
 
