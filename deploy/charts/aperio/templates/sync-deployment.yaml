@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aperio.fullname" . }}-sync
+  labels:
+    {{- include "aperio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "aperio.syncSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "aperio.syncSelectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "aperio.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: sync
+          image: {{ include "aperio.syncImage" . }}
+          imagePullPolicy: {{ .Values.syncImage.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            - name: VAULT_PATH
+              value: {{ .Values.sync.vaultPath | quote }}
+            - name: SERVER_URL
+              value: {{ .Values.sync.serverUrl | quote }}
+            - name: DEVICE_NAME
+              value: {{ .Values.sync.deviceName | quote }}
+            {{- if .Values.sync.deviceId }}
+            - name: DEVICE_ID
+              value: {{ .Values.sync.deviceId | quote }}
+            {{- end }}
+            {{- if .Values.sync.token }}
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "aperio.secretName" . }}
+                  key: sync-token
+            {{- end }}
+            {{- with .Values.syncExtraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: vault
+              mountPath: {{ .Values.aperio.vaultDir }}
+          {{- with .Values.sync.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: vault
+          persistentVolumeClaim:
+            claimName: {{ include "aperio.pvcName" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

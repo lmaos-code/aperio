@@ -96,46 +96,10 @@ spec:
           volumeMounts:
             - name: vault
               mountPath: {{ .Values.aperio.vaultDir }}
-              readOnly: true
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-        {{- if .Values.sync.enabled }}
-        - name: sync
-          image: {{ include "aperio.syncImage" . }}
-          imagePullPolicy: {{ .Values.syncImage.pullPolicy }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          env:
-            - name: VAULT_PATH
-              value: {{ .Values.sync.vaultPath | quote }}
-            - name: SERVER_URL
-              value: {{ .Values.sync.serverUrl | quote }}
-            - name: DEVICE_NAME
-              value: {{ .Values.sync.deviceName | quote }}
-            {{- if .Values.sync.deviceId }}
-            - name: DEVICE_ID
-              value: {{ .Values.sync.deviceId | quote }}
-            {{- end }}
-            {{- if .Values.sync.token }}
-            - name: TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "aperio.secretName" . }}
-                  key: sync-token
-            {{- end }}
-            {{- with .Values.syncExtraEnv }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
-          volumeMounts:
-            - name: vault
-              mountPath: {{ .Values.aperio.vaultDir }}
-          {{- with .Values.resources }}
-          resources:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-        {{- end }}
       volumes:
         - name: vault
           persistentVolumeClaim:

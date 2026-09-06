@@ -49,6 +49,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Sync selector labels
+*/}}
+{{- define "aperio.syncSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "aperio.name" . }}-sync
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "aperio.serviceAccountName" -}}

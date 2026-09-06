@@ -1,6 +1,6 @@
 # Default values for Aperio
 
-# -- Number of replicas (should be 1, Aperio is not horizontally scalable)
+# -- Number of replicas (requires RWX storage for multiple; sync always runs as single replica)
 replicaCount: 1
 
 image:
@@ -125,7 +125,7 @@ podDisruptionBudget:
   enabled: false
   minAvailable: 1
 
-# -- PersistentVolumeClaim for vault storage
+# -- PersistentVolumeClaim for vault storage (RWX required for multiple aperio replicas)
 persistence:
   enabled: true
   # -- Storage class name (uses default if not set)
@@ -164,10 +164,8 @@ auth:
   # -- Required claims (comma-separated, e.g. "sub,email")
   requiredClaims: ""
 
-# -- Obsidian Headless Sync configuration
+# -- Obsidian Headless Sync configuration (always deployed)
 sync:
-  # -- Enable the sync sidecar container
-  enabled: true
   # -- Obsidian sync server URL
   serverUrl: "https://api.obsidian.md"
   # -- Vault path on the sync server
@@ -178,6 +176,14 @@ sync:
   deviceName: "aperio-k8s"
   # -- Device ID (generate a UUID if not set)
   deviceId: ""
+  # -- Resource limits and requests for sync container
+  resources:
+    limits:
+      cpu: 100m
+      memory: 64Mi
+    requests:
+      cpu: 50m
+      memory: 32Mi
 
 # -- Additional environment variables for Aperio
 extraEnv: []
