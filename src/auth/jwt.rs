@@ -1,5 +1,5 @@
 use anyhow::Context;
-use jsonwebtoken::{decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, Validation};
+use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header, jwk::JwkSet};
 use tracing::error;
 
 use crate::mcp::AperioError;
@@ -47,8 +47,8 @@ impl JwtVerifier {
     }
 
     pub fn verify(&self, token: &str) -> Result<Claims, AperioError> {
-        let header =
-            decode_header(token).map_err(|e| AperioError::Unauthorized(format!("Invalid token header: {e}")))?;
+        let header = decode_header(token)
+            .map_err(|e| AperioError::Unauthorized(format!("Invalid token header: {e}")))?;
 
         let kid = header
             .kid
@@ -61,8 +61,9 @@ impl JwtVerifier {
             .find(|k| k.common.key_id.as_deref() == Some(&kid))
             .ok_or_else(|| AperioError::Unauthorized(format!("No matching key for kid: {kid}")))?;
 
-        let decoding_key = DecodingKey::from_jwk(jwk)
-            .map_err(|e| AperioError::Unauthorized(format!("Failed to create decoding key: {e}")))?;
+        let decoding_key = DecodingKey::from_jwk(jwk).map_err(|e| {
+            AperioError::Unauthorized(format!("Failed to create decoding key: {e}"))
+        })?;
 
         let token_data = decode::<Claims>(token, &decoding_key, &self.validation)
             .map_err(|e| AperioError::Unauthorized(format!("Token validation failed: {e}")))?;
@@ -93,10 +94,7 @@ fn has_claim(claims: &Claims, claim_name: &str) -> bool {
 }
 
 async fn get_jwks(url: &str) -> Result<JwkSet, anyhow::Error> {
-    let req = reqwest::get(url)
-        .await?
-        .json::<serde_json::Value>()
-        .await?;
+    let req = reqwest::get(url).await?.json::<serde_json::Value>().await?;
 
     let jwks_uri = req
         .get("jwks_uri")

@@ -62,8 +62,7 @@ impl Config {
                 .filter(|s| !s.is_empty())
                 .map(|s| s.split(',').map(String::from).collect())
                 .unwrap_or_default(),
-            mcp_realm: std::env::var("MCP_REALM")
-                .unwrap_or_else(|_| "mcp".into()),
+            mcp_realm: std::env::var("MCP_REALM").unwrap_or_else(|_| "mcp".into()),
             mcp_scopes: std::env::var("MCP_SCOPES")
                 .ok()
                 .filter(|s| !s.is_empty())

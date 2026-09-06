@@ -62,7 +62,6 @@ impl AperioTools {
     }
 }
 
-#[allow(unknown_lints, clippy::unused_async_trait_impl)]
 #[tool_router(server_handler)]
 impl AperioTools {
     #[tool(description = "List all notes in the vault, optionally filtered by folder")]
@@ -150,7 +149,10 @@ impl AperioTools {
             if let Ok(note) = self.vault.read_note(&summary.path.to_string_lossy())
                 && (note.content.to_lowercase().contains(&query)
                     || summary.title.to_lowercase().contains(&query)
-                    || summary.tags.iter().any(|t| t.to_lowercase().contains(&query)))
+                    || summary
+                        .tags
+                        .iter()
+                        .any(|t| t.to_lowercase().contains(&query)))
             {
                 matches.push(summary.clone());
             }
@@ -192,7 +194,9 @@ impl AperioTools {
         Ok(CallToolResult::success(vec![ContentBlock::text(output)]))
     }
 
-    #[tool(description = "Create or overwrite a note with given content. Content should include optional YAML frontmatter (---\\ntitle: ...\\ntags: [...]\\n---).")]
+    #[tool(
+        description = "Create or overwrite a note with given content. Content should include optional YAML frontmatter (---\\ntitle: ...\\ntags: [...]\\n---)."
+    )]
     async fn write_note(
         &self,
         rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<WriteNoteParams>,
