@@ -1,0 +1,18 @@
+lint:
+  rules:
+    capital-first-letter: true
+    require-scope: false
+
+bump-rules:
+  breaking-change: major
+  feat: minor
+  fix: patch
+  perf: patch
+  revert: patch
+  refactor: patch
+
+release-branches: [main]
+
+tag-prefix: "v"
+
+initial-version: "0.0.0"

@@ -64,36 +64,32 @@ jobs:
     needs: [lint, test, helm-lint]
     runs-on: ubuntu-latest
     outputs:
-      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
-      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+      released: ${{ steps.semrel.outputs.released }}
+      version: ${{ steps.semrel.outputs.version }}
+      tag: ${{ steps.semrel.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-go@v5
         with:
-          node-version: 24
+          go-version: '1.25'
 
-      - name: Install semantic-release
-        run: npm install -g semantic-release @semantic-release/release-notes-generator @semantic-release/commit-analyzer @semantic-release/github @semantic-release/exec
+      - run: go build -o semrel github.com/nrkno/github-action-semantic-release/cmd/semrel
 
-      - name: Run semantic-release
-        id: semantic
+      - id: semrel
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: ./semrel release
 
-      - name: Debug semantic-release outputs
-        run: |
-          echo "new_release_published=${{ steps.semantic.outputs.new_release_published }}"
-          echo "new_release_version=${{ steps.semantic.outputs.new_release_version }}"
+      - run: ./semrel notes >> $GITHUB_STEP_SUMMARY
+        if: steps.semrel.outputs.released == 'true'
 
   docker:
     name: Build & Push Docker Image
     needs: [release]
-    if: needs.release.outputs.new_release_published == 'true'
+    if: needs.release.outputs.released == 'true'
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
@@ -120,9 +116,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=raw,value=${{ needs.release.outputs.tag }}
+            type=raw,value=${{ needs.release.outputs.version }}
             type=sha
 
       - name: Build and push
@@ -139,7 +134,7 @@ jobs:
   helm:
     name: Package & Push Helm Chart
     needs: [release]
-    if: needs.release.outputs.new_release_published == 'true'
+    if: needs.release.outputs.released == 'true'
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
@@ -154,7 +149,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} --username ${{ github.actor }} --password-stdin
 
       - name: Package chart
-        run: helm package deploy/charts/${{ env.CHART_NAME }} --version ${{ needs.release.outputs.new_release_version }}
+        run: helm package deploy/charts/${{ env.CHART_NAME }} --version ${{ needs.release.outputs.version }}
 
       - name: Push chart
-        run: helm push ${{ env.CHART_NAME }}-${{ needs.release.outputs.new_release_version }}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+        run: helm push ${{ env.CHART_NAME }}-${{ needs.release.outputs.version }}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
