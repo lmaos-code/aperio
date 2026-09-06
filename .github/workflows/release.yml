@@ -78,19 +78,23 @@ jobs:
           subcommand: release
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  docker:
-    name: Build & Push Docker Image
+  docker-build:
+    name: Build (${{ matrix.platform.target }})
     needs: [release]
     if: needs.release.outputs.released == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - target: amd64
+            runner: ubuntu-latest
+          - target: arm64
+            runner: ubuntu-24.04-arm
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -102,29 +106,57 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern=v{{version}},value=${{ needs.release.outputs.tag }}
-            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.release.outputs.tag }}
-            type=semver,pattern=v{{major}},value=${{ needs.release.outputs.tag }}
-            type=sha
-
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.platform.target }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.platform.target }}
           build-args: |
             VERSION=${{ needs.release.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+
+  docker-manifest:
+    name: Create Multi-Arch Manifest
+    needs: [release, docker-build]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest and push
+        run: |
+          # Create multi-arch manifest for each tag
+          TAGS="v${{ needs.release.outputs.version }} v${{ needs.release.outputs.version | regex_replace('\.[0-9]+$', '') }} v${{ needs.release.outputs.version | regex_replace('\.[0-9]+\.[0-9]+$', '') }}"
+          for tag in $TAGS; do
+            docker buildx imagetools create \
+              -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${tag} \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+          done
+
+          # Also tag with commit SHA
+          docker buildx imagetools create \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+
+      - name: Clean up platform tags
+        run: |
+          # Remove the temporary platform-specific tags
+          docker buildx imagetools delete ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
+          docker buildx imagetools delete ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
 
   helm:
     name: Package & Push Helm Chart
