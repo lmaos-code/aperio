@@ -66,7 +66,7 @@ impl AperioTools {
 #[tool_router(server_handler)]
 impl AperioTools {
     #[tool(description = "List all notes in the vault, optionally filtered by folder")]
-    fn list_notes(
+    async fn list_notes(
         &self,
         rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<ListNotesParams>,
     ) -> Result<CallToolResult, McpError> {
@@ -107,7 +107,7 @@ impl AperioTools {
     }
 
     #[tool(description = "Read a note's content and frontmatter by relative path")]
-    fn read_note(
+    async fn read_note(
         &self,
         rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<ReadNoteParams>,
     ) -> Result<CallToolResult, McpError> {
@@ -135,7 +135,7 @@ impl AperioTools {
     }
 
     #[tool(description = "Search notes by content query (full-text search)")]
-    fn search_notes(
+    async fn search_notes(
         &self,
         rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<SearchNotesParams>,
     ) -> Result<CallToolResult, McpError> {
@@ -171,7 +171,7 @@ impl AperioTools {
     }
 
     #[tool(description = "List vault folders with note counts")]
-     fn list_folders(
+    async fn list_folders(
         &self,
         rmcp::handler::server::wrapper::Parameters(_params): rmcp::handler::server::wrapper::Parameters<ListFoldersParams>,
     ) -> Result<CallToolResult, McpError> {
@@ -193,7 +193,7 @@ impl AperioTools {
     }
 
     #[tool(description = "Create or overwrite a note with given content. Content should include optional YAML frontmatter (---\\ntitle: ...\\ntags: [...]\\n---).")]
-    fn write_note(
+    async fn write_note(
         &self,
         rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<WriteNoteParams>,
     ) -> Result<CallToolResult, McpError> {
@@ -226,7 +226,7 @@ impl AperioTools {
     }
 
     #[tool(description = "Read frontmatter and tags without the note body")]
-     fn get_note_metadata(
+    async fn get_note_metadata(
         &self,
         rmcp::handler::server::wrapper::Parameters(params): rmcp::handler::server::wrapper::Parameters<GetNoteMetadataParams>,
     ) -> Result<CallToolResult, McpError> {
