@@ -39,6 +39,8 @@ spec:
               containerPort: {{ .Values.aperio.mcpPort }}
               protocol: TCP
           env:
+            - name: APERIO_VERSION
+              value: {{ .Chart.AppVersion | quote }}
             - name: MCP_PORT
               value: {{ .Values.aperio.mcpPort | quote }}
             - name: OBSIDIAN_VAULT_DIR
@@ -51,7 +53,6 @@ spec:
               value: {{ .Values.aperio.mcpRealm | quote }}
             - name: MCP_SCOPES
               value: {{ .Values.aperio.mcpScopes | quote }}
-            {{- if .Values.auth.enabled }}
             - name: OIDC_ISSUER_URL
               valueFrom:
                 secretKeyRef:
@@ -68,7 +69,6 @@ spec:
             {{- if .Values.auth.requiredClaims }}
             - name: OIDC_REQUIRED_CLAIMS
               value: {{ .Values.auth.requiredClaims | quote }}
-            {{- end }}
             {{- end }}
             {{- if .Values.aperio.publicUrl }}
             - name: PUBLIC_URL

@@ -60,7 +60,7 @@ service:
   # -- Container target port (should match MCP_PORT)
   targetPort: 3000
 
-# -- Ingress configuration
+# -- Ingress configuration (legacy, prefer httpRoute)
 ingress:
   enabled: false
   className: ""
@@ -76,6 +76,31 @@ ingress:
   #  - secretName: aperio-tls
   #    hosts:
   #      - aperio.local
+
+# -- HTTPRoute configuration (Gateway API)
+httpRoute:
+  enabled: false
+  # -- Gateway name (must exist in the cluster)
+  gatewayName: ""
+  # -- Gateway namespace (defaults to release namespace)
+  gatewayNamespace: ""
+  # -- Parent refs (alternative to gatewayName for complex routing)
+  parentRefs: []
+  # - name: my-gateway
+  #   namespace: gateway-system
+  #   sectionName: https
+  # -- Hostnames to match
+  hostnames: []
+  # - aperio.example.com
+  # -- HTTPRoute rules
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: ""  # defaults to release service
+          port: 80
 
 # -- Resource limits and requests
 resources:
@@ -128,10 +153,8 @@ aperio:
   # -- MCP scopes (comma-separated, e.g. "mcp:read,mcp:write")
   mcpScopes: "mcp:read,mcp:write"
 
-# -- OIDC authentication configuration
+# -- OIDC authentication configuration (always required)
 auth:
-  # -- Enable OIDC authentication
-  enabled: false
   # -- OIDC issuer URL
   issuerUrl: ""
   # -- Required audience claim

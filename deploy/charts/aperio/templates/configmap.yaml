@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "aperio.labels" . | nindent 4 }}
 data:
+  APERIO_VERSION: {{ .Chart.AppVersion | quote }}
   MCP_PORT: {{ .Values.aperio.mcpPort | quote }}
   OBSIDIAN_VAULT_DIR: {{ .Values.aperio.vaultDir | quote }}
   RUST_LOG: {{ .Values.aperio.logLevel | quote }}

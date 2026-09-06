@@ -6,6 +6,7 @@ WORKDIR /app
 
 COPY . .
 
+ARG VERSION=dev
 RUN cargo build --release
 
 FROM alpine:3.20
@@ -16,6 +17,7 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/Aperio /app/aperio
 
+ENV APERIO_VERSION=${VERSION:-dev}
 EXPOSE 3000
 
 ENTRYPOINT ["/app/aperio"]
