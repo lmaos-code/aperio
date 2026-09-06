@@ -109,6 +109,10 @@ The server publishes [RFC 9728](https://datatracker.ietf.org/doc/rfc9728/) Prote
 | `/healthz` | Liveness/readiness probe |
 | `/.well-known/oauth-protected-resource` | RFC 9728 metadata (public) |
 
+## Roadmap - Soon™
+- [ ] Semantic Search for your Agent trough coupled RAG-System with Aperio
+
+
 ## Development
 
 ### Prerequisites
@@ -142,6 +146,7 @@ docker compose -f dev/compose.yml --profile sync up -d
 ### Useful Commands
 
 ```bash
+bacon                          # just use bacon
 cargo clippy -- -D warnings    # lint
 cargo fmt --check              # format check
 cargo test                     # run tests
