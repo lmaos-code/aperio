@@ -4,17 +4,9 @@ RUN apk add --no-cache musl-dev pkgconf openssl-dev
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
+COPY . .
 
-RUN mkdir src && \
-    echo "fn main() {}" > src/main.rs && \
-    cargo build --release && \
-    rm -rf src
-
-COPY src/ src/
-COPY templates/ templates/
-
-RUN touch src/main.rs && cargo build --release
+RUN cargo build --release
 
 FROM alpine:3.20
 
