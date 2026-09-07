@@ -53,15 +53,15 @@ spec:
               value: {{ .Values.aperio.mcpRealm | quote }}
             - name: MCP_SCOPES
               value: {{ .Values.aperio.mcpScopes | quote }}
-            - name: OIDC_ISSUER_URL
+            - name: OIDC_DISCOVERY_URL
               valueFrom:
                 secretKeyRef:
-                  {{- if .Values.auth.issuerUrlRef.secretName }}
-                  name: {{ .Values.auth.issuerUrlRef.secretName }}
-                  key: {{ .Values.auth.issuerUrlRef.key }}
+                  {{- if .Values.auth.discoveryUrlRef.secretName }}
+                  name: {{ .Values.auth.discoveryUrlRef.secretName }}
+                  key: {{ .Values.auth.discoveryUrlRef.key }}
                   {{- else }}
                   name: {{ include "aperio.secretName" . }}
-                  key: oidc-issuer-url
+                  key: oidc-discovery-url
                   {{- end }}
             {{- if .Values.auth.audience }}
             - name: OIDC_AUDIENCE

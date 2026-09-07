@@ -141,7 +141,7 @@ pub async fn protected_resource_metadata(
     });
 
     let issuer_base = cfg
-        .issuer_url
+        .discovery_url
         .trim_end_matches('/')
         .trim_end_matches("/.well-known/openid-configuration")
         .to_string();

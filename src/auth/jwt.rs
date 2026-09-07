@@ -22,7 +22,7 @@ pub struct JwtVerifier {
 
 impl JwtVerifier {
     pub async fn new(cfg: &crate::config::Config) -> anyhow::Result<Self> {
-        let jwks = get_jwks(&cfg.issuer_url).await.map_err(|e| {
+        let jwks = get_jwks(&cfg.discovery_url).await.map_err(|e| {
             error!("Failed to fetch OIDC JWKS: {e}");
             e
         })?;

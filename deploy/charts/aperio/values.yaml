@@ -155,14 +155,14 @@ aperio:
 
 # -- OIDC authentication configuration (always required)
 auth:
-  # -- OIDC issuer URL (direct value)
-  issuerUrl: ""
-  # -- OIDC issuer URL from existing Secret
-  issuerUrlRef:
+  # -- OIDC discovery URL (direct value)
+  discoveryUrl: ""
+  # -- OIDC discovery URL from existing Secret
+  discoveryUrlRef:
     # -- Secret name
     secretName: ""
     # -- Key in the Secret
-    key: "oidc-issuer-url"
+    key: "oidc-discovery-url"
   # -- Required audience claim
   audience: ""
   # -- Required issuer claim

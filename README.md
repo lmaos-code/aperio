@@ -33,7 +33,7 @@ Aperio syncs with Obsidian's own cloud service (preserving end-to-end encryption
 docker run -d \
   -p 3000:3000 \
   -v /path/to/vault:/vault \
-  -e OIDC_ISSUER_URL=https://keycloak.example.com/realms/aperio/.well-known/openid-configuration \
+  -e OIDC_DISCOVERY_URL=https://keycloak.example.com/realms/aperio/.well-known/openid-configuration \
   ghcr.io/lmaos-code/aperio:v1
 ```
 
@@ -41,7 +41,7 @@ docker run -d \
 
 ```bash
 helm install aperio oci://ghcr.io/lmaos-code/charts/aperio \
-  --set auth.issuerUrl=https://keycloak.example.com/realms/aperio
+  --set auth.discoveryUrl=https://keycloak.example.com/realms/aperio
 ```
 
 ### Obsidian Sync Token
@@ -77,7 +77,7 @@ kubectl create secret generic sync-credentials \
 | `OBSIDIAN_VAULT_DIR` | `/obsidian-vault` | Path to the vault |
 | `RUST_LOG` | — | Log level (`info`, `debug`, `trace`) |
 | `APERIO_VERSION` | `development` | Version string (set automatically in Docker) |
-| `OIDC_ISSUER_URL` | — | OIDC discovery URL (**required in production**) |
+| `OIDC_DISCOVERY_URL` | — | OIDC discovery URL (**required in production**) |
 | `LOCAL_AUTH` | — | Set `true` to disable auth (dev only) |
 | `PUBLIC_URL` | — | Public base URL for OAuth metadata (derived from `Host` header if unset) |
 | `OIDC_AUDIENCE` | — | Required `aud` claim |
@@ -93,7 +93,7 @@ kubectl create secret generic sync-credentials \
 replicaCount: 1
 
 auth:
-  issuerUrl: https://keycloak.example.com/realms/aperio
+  discoveryUrl: https://keycloak.example.com/realms/aperio
   audience: ""
   requiredIssuer: ""
   requiredClaims: ""

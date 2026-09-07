@@ -31,7 +31,7 @@ pub async fn router(cfg: &Config) -> anyhow::Result<Router> {
         let verifier = JwtVerifier::new(cfg).await?;
 
         let auth_server_url = cfg
-            .issuer_url
+            .discovery_url
             .trim_end_matches('/')
             .trim_end_matches("/.well-known/openid-configuration")
             .to_string();
