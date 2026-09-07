@@ -34,6 +34,7 @@ pub struct Config {
     pub required_claims: Vec<String>,
     pub mcp_realm: String,
     pub mcp_scopes: Vec<String>,
+    pub allowed_hosts: Vec<String>,
 }
 
 impl Config {
@@ -70,6 +71,11 @@ impl Config {
                     || vec!["mcp:read".into(), "mcp:write".into()],
                     |s| s.split(',').map(String::from).collect(),
                 ),
+            allowed_hosts: std::env::var("MCP_ALLOWED_HOSTS")
+                .ok()
+                .filter(|s| !s.is_empty())
+                .map(|s| s.split(',').map(String::from).collect())
+                .unwrap_or_default(),
         }
     }
 }

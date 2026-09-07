@@ -13,6 +13,9 @@ data:
   {{- if .Values.aperio.publicUrl }}
   PUBLIC_URL: {{ .Values.aperio.publicUrl | quote }}
   {{- end }}
+  {{- if .Values.aperio.allowedHosts }}
+  MCP_ALLOWED_HOSTS: {{ .Values.aperio.allowedHosts | join "," | quote }}
+  {{- end }}
   {{- if .Values.auth.audience }}
   OIDC_AUDIENCE: {{ .Values.auth.audience | quote }}
   {{- end }}

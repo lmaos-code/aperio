@@ -17,11 +17,14 @@ pub async fn router(cfg: &Config) -> anyhow::Result<Router> {
     let vault = VaultReader::new(std::path::PathBuf::from(&cfg.vault_dir));
     let tools = AperioTools::new(vault);
 
+    let mut server_config = StreamableHttpServerConfig::default();
+    server_config.allowed_hosts = cfg.allowed_hosts.clone();
+
     let mcp_service: StreamableHttpService<AperioTools, LocalSessionManager> =
         StreamableHttpService::new(
             move || Ok(tools.clone()),
             LocalSessionManager::default().into(),
-            StreamableHttpServerConfig::default(),
+            server_config,
         );
 
     let mut protected = Router::new().nest_service("/mcp", mcp_service);
