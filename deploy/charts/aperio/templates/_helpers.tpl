@@ -76,7 +76,7 @@ Create the name of the service account to use
 Image reference
 */}}
 {{- define "aperio.image" -}}
-{{- $tag := default .Chart.Version .Values.image.tag -}}
+{{- $tag := default (include "aperio.version" .) .Values.image.tag -}}
 {{- printf "%s:%s" .Values.image.repository $tag -}}
 {{- end }}
 
