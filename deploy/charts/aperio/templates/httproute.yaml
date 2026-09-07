@@ -8,7 +8,11 @@ metadata:
 spec:
   {{- if .Values.httpRoute.parentRefs }}
   parentRefs:
+    {{- if kindIs "slice" .Values.httpRoute.parentRefs }}
     {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
+    {{- else }}
+    - {{- toYaml .Values.httpRoute.parentRefs | nindent 6 }}
+    {{- end }}
   {{- else if .Values.httpRoute.gatewayName }}
   parentRefs:
     - name: {{ .Values.httpRoute.gatewayName }}
@@ -18,7 +22,11 @@ spec:
   {{- end }}
   {{- with .Values.httpRoute.hostnames }}
   hostnames:
+    {{- if kindIs "slice" . }}
     {{- toYaml . | nindent 4 }}
+    {{- else }}
+    - {{ . | quote }}
+    {{- end }}
   {{- end }}
   rules:
     {{- range $i, $rule := .Values.httpRoute.rules }}
