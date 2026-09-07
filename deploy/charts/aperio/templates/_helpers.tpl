@@ -29,12 +29,19 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Sanitized version (strip +build suffix for Kubernetes labels)
+*/}}
+{{- define "aperio.version" -}}
+{{- regexReplaceAll "\\+.*" .Chart.Version "" }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "aperio.labels" -}}
 helm.sh/chart: {{ include "aperio.chart" . }}
 {{ include "aperio.selectorLabels" . }}
-app.kubernetes.io/version: {{ .Chart.Version | quote }}
+app.kubernetes.io/version: {{ include "aperio.version" . | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
