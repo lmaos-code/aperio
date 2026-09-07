@@ -40,7 +40,7 @@ spec:
               protocol: TCP
           env:
             - name: APERIO_VERSION
-              value: {{ default .Chart.AppVersion .Values.appVersion | quote }}
+              value: {{ .Chart.Version | quote }}
             - name: MCP_PORT
               value: {{ .Values.aperio.mcpPort | quote }}
             - name: OBSIDIAN_VAULT_DIR

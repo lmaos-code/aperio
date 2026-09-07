@@ -34,9 +34,7 @@ Common labels
 {{- define "aperio.labels" -}}
 helm.sh/chart: {{ include "aperio.chart" . }}
 {{ include "aperio.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/version: {{ .Chart.Version | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
@@ -71,7 +69,7 @@ Create the name of the service account to use
 Image reference
 */}}
 {{- define "aperio.image" -}}
-{{- $tag := default .Chart.AppVersion .Values.image.tag -}}
+{{- $tag := default .Chart.Version .Values.image.tag -}}
 {{- printf "%s:%s" .Values.image.repository $tag -}}
 {{- end }}
 

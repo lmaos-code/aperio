@@ -6,13 +6,10 @@ replicaCount: 1
 image:
   # -- Aperio container image repository
   repository: ghcr.io/lmaos-code/aperio
-  # -- Aperio container image tag (defaults to appVersion)
+  # -- Aperio container image tag (defaults to .Chart.version)
   tag: ""
   # -- Image pull policy
   pullPolicy: IfNotPresent
-
-# -- App version override (defaults to Chart.appVersion)
-appVersion: ""
 
 syncImage:
   # -- Obsidian Headless Sync container image repository
