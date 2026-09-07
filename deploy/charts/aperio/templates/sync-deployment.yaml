@@ -33,7 +33,10 @@ spec:
           image: {{ include "aperio.syncImage" . }}
           imagePullPolicy: {{ .Values.syncImage.pullPolicy }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: VAULT_PATH
               value: {{ .Values.sync.vaultPath | quote }}
