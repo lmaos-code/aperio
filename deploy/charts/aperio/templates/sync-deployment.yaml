@@ -45,12 +45,17 @@ spec:
             - name: DEVICE_ID
               value: {{ .Values.sync.deviceId | quote }}
             {{- end }}
-            {{- if .Values.sync.token }}
+            {{- if or .Values.sync.token .Values.sync.tokenRef.secretName }}
             - name: TOKEN
               valueFrom:
                 secretKeyRef:
+                  {{- if .Values.sync.tokenRef.secretName }}
+                  name: {{ .Values.sync.tokenRef.secretName }}
+                  key: {{ .Values.sync.tokenRef.key }}
+                  {{- else }}
                   name: {{ include "aperio.secretName" . }}
                   key: sync-token
+                  {{- end }}
             {{- end }}
             {{- with .Values.syncExtraEnv }}
             {{- toYaml . | nindent 12 }}

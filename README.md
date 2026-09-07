@@ -44,6 +44,29 @@ helm install aperio oci://ghcr.io/lmaos-code/charts/aperio \
   --set auth.issuerUrl=https://keycloak.example.com/realms/aperio
 ```
 
+### Obsidian Sync Token
+
+Aperio uses [Obsidian Headless Sync](https://github.com/belphemur/obsidian-headless-sync-docker) to keep the vault in sync. You need a token to authenticate with Obsidian's sync service:
+
+```bash
+docker run --rm -it --entrypoint get-token ghcr.io/belphemur/obsidian-headless-sync-docker:latest
+```
+
+Follow the prompts to authenticate with your Obsidian account. The token is long-lived and persists until you revoke it from Obsidian settings.
+
+Store it securely:
+
+```bash
+# For Docker
+docker run -d \
+  -e OBSIDIAN_AUTH_TOKEN=YOUR_TOKEN \
+  ...
+
+# For Kubernetes
+kubectl create secret generic sync-credentials \
+  --from-literal=sync-token=YOUR_TOKEN
+```
+
 ## Configuration
 
 ### Environment Variables

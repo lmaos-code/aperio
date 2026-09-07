@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   # -- Aperio container image repository
-  repository: aperio
+  repository: ghcr.io/lmaos-code/aperio
   # -- Aperio container image tag (defaults to appVersion)
   tag: ""
   # -- Image pull policy
@@ -155,8 +155,14 @@ aperio:
 
 # -- OIDC authentication configuration (always required)
 auth:
-  # -- OIDC issuer URL
+  # -- OIDC issuer URL (direct value)
   issuerUrl: ""
+  # -- OIDC issuer URL from existing Secret
+  issuerUrlRef:
+    # -- Secret name
+    secretName: ""
+    # -- Key in the Secret
+    key: "oidc-issuer-url"
   # -- Required audience claim
   audience: ""
   # -- Required issuer claim
@@ -170,8 +176,14 @@ sync:
   serverUrl: "https://api.obsidian.md"
   # -- Vault path on the sync server
   vaultPath: ""
-  # -- Authentication token
+  # -- Authentication token (direct value)
   token: ""
+  # -- Authentication token from existing Secret
+  tokenRef:
+    # -- Secret name
+    secretName: ""
+    # -- Key in the Secret
+    key: "sync-token"
   # -- Device name
   deviceName: "aperio-k8s"
   # -- Device ID (generate a UUID if not set)

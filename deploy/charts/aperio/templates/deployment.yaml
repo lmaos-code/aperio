@@ -56,8 +56,13 @@ spec:
             - name: OIDC_ISSUER_URL
               valueFrom:
                 secretKeyRef:
+                  {{- if .Values.auth.issuerUrlRef.secretName }}
+                  name: {{ .Values.auth.issuerUrlRef.secretName }}
+                  key: {{ .Values.auth.issuerUrlRef.key }}
+                  {{- else }}
                   name: {{ include "aperio.secretName" . }}
                   key: oidc-issuer-url
+                  {{- end }}
             {{- if .Values.auth.audience }}
             - name: OIDC_AUDIENCE
               value: {{ .Values.auth.audience | quote }}
