@@ -29,10 +29,10 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Sanitized version (strip +build suffix for Kubernetes labels)
+Sanitized version with v prefix (strip +build suffix for Kubernetes labels)
 */}}
 {{- define "aperio.version" -}}
-{{- regexReplaceAll "\\+.*" .Chart.Version "" }}
+{{- printf "v%s" (regexReplaceAll "\\+.*" .Chart.Version "") }}
 {{- end }}
 
 {{/*
