@@ -11,6 +11,9 @@ image:
   # -- Image pull policy
   pullPolicy: IfNotPresent
 
+# -- App version override (defaults to Chart.appVersion)
+appVersion: ""
+
 syncImage:
   # -- Obsidian Headless Sync container image repository
   repository: ghcr.io/belphemur/obsidian-headless-sync-docker
