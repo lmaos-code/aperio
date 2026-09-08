@@ -174,10 +174,18 @@ auth:
 
 # -- Obsidian Headless Sync configuration (always deployed)
 sync:
+  # -- Remote Obsidian Sync vault name (exact, case-sensitive)
+  vaultName: ""
+  # -- Sync mode: bidirectional, pull-only, mirror-remote
+  syncMode: "bidirectional"
+  # -- UID that will own synced files
+  puid: "1000"
+  # -- GID that will own synced files
+  pgid: "1000"
   # -- Obsidian sync server URL
-  serverUrl: "https://api.obsidian.md"
-  # -- Vault path on the sync server
-  vaultPath: ""
+  serverUrl: ""
+  # -- Vault path inside the container
+  vaultPath: "/vault"
   # -- Authentication token (direct value)
   token: ""
   # -- Authentication token from existing Secret
@@ -185,7 +193,15 @@ sync:
     # -- Secret name
     secretName: ""
     # -- Key in the Secret
-    key: "sync-token"
+    key: "token"
+  # -- Vault encryption password (for E2E encrypted vaults, optional)
+  vaultPassword: ""
+  # -- Vault encryption password from existing Secret
+  vaultPasswordRef:
+    # -- Secret name
+    secretName: ""
+    # -- Key in the Secret
+    key: "VAULT_PASSWORD"
   # -- Device name
   deviceName: "aperio-k8s"
   # -- Device ID (generate a UUID if not set)
@@ -193,11 +209,11 @@ sync:
   # -- Resource limits and requests for sync container
   resources:
     limits:
-      cpu: 100m
-      memory: 64Mi
+      cpu: 500m
+      memory: 512Mi
     requests:
       cpu: 50m
-      memory: 32Mi
+      memory: 128Mi
 
 # -- Additional environment variables for Aperio
 extraEnv: []

@@ -42,16 +42,28 @@ spec:
           env:
             - name: VAULT_PATH
               value: {{ .Values.sync.vaultPath | quote }}
+            - name: VAULT_NAME
+              value: {{ .Values.sync.vaultName | quote }}
+            - name: SYNC_MODE
+              value: {{ .Values.sync.syncMode | quote }}
+            - name: PUID
+              value: {{ .Values.sync.puid | quote }}
+            - name: PGID
+              value: {{ .Values.sync.pgid | quote }}
+            {{- if .Values.sync.serverUrl }}
             - name: SERVER_URL
               value: {{ .Values.sync.serverUrl | quote }}
+            {{- end }}
+            {{- if .Values.sync.deviceName }}
             - name: DEVICE_NAME
               value: {{ .Values.sync.deviceName | quote }}
+            {{- end }}
             {{- if .Values.sync.deviceId }}
             - name: DEVICE_ID
               value: {{ .Values.sync.deviceId | quote }}
             {{- end }}
             {{- if or .Values.sync.token .Values.sync.tokenRef.secretName }}
-            - name: TOKEN
+            - name: OBSIDIAN_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
                   {{- if .Values.sync.tokenRef.secretName }}
@@ -60,6 +72,18 @@ spec:
                   {{- else }}
                   name: {{ include "aperio.secretName" . }}
                   key: sync-token
+                  {{- end }}
+            {{- end }}
+            {{- if or .Values.sync.vaultPassword .Values.sync.vaultPasswordRef.secretName }}
+            - name: VAULT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.sync.vaultPasswordRef.secretName }}
+                  name: {{ .Values.sync.vaultPasswordRef.secretName }}
+                  key: {{ .Values.sync.vaultPasswordRef.key }}
+                  {{- else }}
+                  name: {{ include "aperio.secretName" . }}
+                  key: vault-password
                   {{- end }}
             {{- end }}
             {{- with .Values.syncExtraEnv }}
