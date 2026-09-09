@@ -70,10 +70,9 @@ fn require_auth_response(cfg: &crate::config::Config, req: &Request) -> Response
 
     let resource_metadata_url = format!("{resource_url}/.well-known/oauth-protected-resource");
 
-    let scopes = cfg.mcp_scopes.join(" ");
     let www_auth = format!(
-        r#"Bearer realm="{}", resource_metadata="{}", scope="{}""#,
-        cfg.mcp_realm, resource_metadata_url, scopes,
+        r#"Bearer realm="{}", resource_metadata="{}""#,
+        cfg.mcp_realm, resource_metadata_url,
     );
 
     let body = serde_json::json!({
@@ -106,10 +105,9 @@ fn require_auth_response_with_error(
 
     let resource_metadata_url = format!("{resource_url}/.well-known/oauth-protected-resource");
 
-    let scopes = cfg.mcp_scopes.join(" ");
     let www_auth = format!(
-        r#"Bearer realm="{}", resource_metadata="{}", scope="{}""#,
-        cfg.mcp_realm, resource_metadata_url, scopes,
+        r#"Bearer realm="{}", resource_metadata="{}""#,
+        cfg.mcp_realm, resource_metadata_url,
     );
 
     let body = serde_json::json!({
@@ -150,6 +148,5 @@ pub async fn protected_resource_metadata(
         "resource": resource_url,
         "authorization_servers": [issuer_base],
         "bearer_methods_supported": ["header"],
-        "scopes_supported": cfg.mcp_scopes
     }))
 }

@@ -33,7 +33,6 @@ pub struct Config {
     pub required_issuer: Option<String>,
     pub required_claims: Vec<String>,
     pub mcp_realm: String,
-    pub mcp_scopes: Vec<String>,
     pub allowed_hosts: Vec<String>,
 }
 
@@ -64,13 +63,6 @@ impl Config {
                 .map(|s| s.split(',').map(String::from).collect())
                 .unwrap_or_default(),
             mcp_realm: std::env::var("MCP_REALM").unwrap_or_else(|_| "mcp".into()),
-            mcp_scopes: std::env::var("MCP_SCOPES")
-                .ok()
-                .filter(|s| !s.is_empty())
-                .map_or_else(
-                    || vec!["openid".into(), "email".into()],
-                    |s| s.split(',').map(String::from).collect(),
-                ),
             allowed_hosts: std::env::var("MCP_ALLOWED_HOSTS")
                 .ok()
                 .filter(|s| !s.is_empty())

@@ -33,15 +33,8 @@ pub async fn router(cfg: &Config) -> anyhow::Result<Router> {
         tracing::info!("OIDC authentication enabled");
         let verifier = JwtVerifier::new(cfg).await?;
 
-        let auth_server_url = cfg
-            .discovery_url
-            .trim_end_matches('/')
-            .trim_end_matches("/.well-known/openid-configuration")
-            .to_string();
-
         let auth_state = AuthState {
             verifier: Some(verifier),
-            auth_server_url,
         };
         protected = protected
             .layer(axum::middleware::from_fn(validate_auth))
