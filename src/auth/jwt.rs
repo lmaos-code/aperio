@@ -9,7 +9,7 @@ pub struct Claims {
     pub sub: Option<String>,
     pub exp: usize,
     pub iss: Option<String>,
-    pub aud: Option<String>,
+    pub aud: Option<serde_json::Value>,
     pub email: Option<String>,
 }
 
@@ -29,13 +29,16 @@ impl JwtVerifier {
 
         let mut validation = Validation::new(Algorithm::RS256);
         validation.leeway = 30;
+        validation.validate_aud = false;
 
         if let Some(ref audience) = cfg.required_audience {
             validation.validate_aud = true;
+            tracing::trace!("Setting Audience to {audience}");
             validation.set_audience(&[audience.as_str()]);
         }
 
         if let Some(ref issuer) = cfg.required_issuer {
+            tracing::trace!("Setting issuer to {issuer}");
             validation.set_issuer(&[issuer.as_str()]);
         }
 
