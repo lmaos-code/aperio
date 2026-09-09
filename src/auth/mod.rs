@@ -20,8 +20,6 @@ pub struct AuthUser {
 #[derive(Clone)]
 pub struct AuthState {
     pub verifier: Option<JwtVerifier>,
-    #[allow(dead_code)]
-    pub auth_server_url: String,
 }
 
 pub async fn validate_auth(
@@ -53,6 +51,7 @@ pub async fn validate_auth(
         }
         Err(e) => {
             tracing::warn!("JWT verification failed: {e}");
+            tracing::trace!("Token {token}");
             require_auth_response_with_error(&cfg, &req, &e.to_string())
         }
     }
