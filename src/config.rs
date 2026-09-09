@@ -68,7 +68,7 @@ impl Config {
                 .ok()
                 .filter(|s| !s.is_empty())
                 .map_or_else(
-                    || vec!["mcp:read".into(), "mcp:write".into()],
+                    || vec!["openid".into(), "email".into()],
                     |s| s.split(',').map(String::from).collect(),
                 ),
             allowed_hosts: std::env::var("MCP_ALLOWED_HOSTS")
