@@ -51,8 +51,6 @@ spec:
               value: {{ .Values.aperio.syncCheck | quote }}
             - name: MCP_REALM
               value: {{ .Values.aperio.mcpRealm | quote }}
-            - name: MCP_SCOPES
-              value: {{ .Values.aperio.mcpScopes | quote }}
             - name: OIDC_DISCOVERY_URL
               valueFrom:
                 secretKeyRef:

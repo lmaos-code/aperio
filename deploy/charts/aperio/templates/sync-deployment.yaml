@@ -26,7 +26,9 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "aperio.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
       terminationGracePeriodSeconds: 30
       containers:
         - name: sync
@@ -91,7 +93,7 @@ spec:
             {{- end }}
           volumeMounts:
             - name: vault
-              mountPath: {{ .Values.aperio.vaultDir }}
+              mountPath: {{ .Values.sync.vaultPath | default "/vault" }}
           {{- with .Values.sync.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

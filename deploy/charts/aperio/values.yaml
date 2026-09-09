@@ -150,8 +150,6 @@ aperio:
   syncCheck: file
   # -- MCP realm for WWW-Authenticate header
   mcpRealm: mcp
-  # -- MCP scopes (comma-separated, e.g. "mcp:read,mcp:write")
-  mcpScopes: "mcp:read,mcp:write"
   # -- Allowed hosts for MCP connections (prevents DNS rebinding attacks)
   allowedHosts: []
 
