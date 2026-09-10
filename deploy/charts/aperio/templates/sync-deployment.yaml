@@ -43,6 +43,9 @@ spec:
                 - ALL
               add:
                 - CHOWN
+                - SETUID
+                - SETGID
+                - DAC_OVERRIDE
           env:
             - name: VAULT_PATH
               value: {{ .Values.sync.vaultPath | quote }}
