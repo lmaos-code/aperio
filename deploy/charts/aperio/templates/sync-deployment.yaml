@@ -41,6 +41,8 @@ spec:
             capabilities:
               drop:
                 - ALL
+              add:
+                - CHOWN
           env:
             - name: VAULT_PATH
               value: {{ .Values.sync.vaultPath | quote }}
