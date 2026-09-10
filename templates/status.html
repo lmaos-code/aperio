@@ -1,203 +1,229 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Aperio — Status</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <style>
+      :root {
+        --bg: #0a0a0a;
+        --surface: #141414;
+        --border: #262626;
+        --text: #e5e5e5;
+        --text-muted: #737373;
+        --green: #22c55e;
+        --green-surface: #052e16;
+        --green-border: #166534;
+      }
+      @media (prefers-color-scheme: light) {
         :root {
-            --bg: #0a0a0a;
-            --surface: #141414;
-            --border: #262626;
-            --text: #e5e5e5;
-            --text-muted: #737373;
-            --green: #22c55e;
-            --green-surface: #052e16;
-            --green-border: #166534;
+          --bg: #fafafa;
+          --surface: #ffffff;
+          --border: #e5e5e5;
+          --text: #171717;
+          --text-muted: #a3a3a3;
+          --green: #16a34a;
+          --green-surface: #f0fdf4;
+          --green-border: #bbf7d0;
         }
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg: #fafafa;
-                --surface: #ffffff;
-                --border: #e5e5e5;
-                --text: #171717;
-                --text-muted: #a3a3a3;
-                --green: #16a34a;
-                --green-surface: #f0fdf4;
-                --green-border: #bbf7d0;
-            }
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 4rem 1.5rem;
-        }
-        .container { max-width: 480px; width: 100%; }
-        .header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 2.5rem;
-        }
-        .logo {
-            width: 32px;
-            height: 32px;
-            background: var(--green);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-            color: #000;
-        }
-        h1 { font-size: 1.25rem; font-weight: 600; }
-        .status-card {
-            background: var(--green-surface);
-            border: 1px solid var(--green-border);
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-        .status-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--green);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .status-icon svg {
-            width: 16px;
-            height: 16px;
-            color: #000;
-        }
-        .status-text {
-            font-weight: 600;
-            font-size: 0.9375rem;
-            color: var(--green);
-        }
-        .status-sub {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            margin-top: 0.125rem;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-        }
-        .card-label {
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.375rem;
-        }
-        .card-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-        .card-full {
-            grid-column: 1 / -1;
-        }
-        .detail {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.875rem;
-        }
-        .detail:last-child { border-bottom: none; }
-        .detail-key { color: var(--text-muted); }
-        .detail-value { font-weight: 500; font-variant-numeric: tabular-nums; }
-        .footer {
-            margin-top: 2.5rem;
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 4rem 1.5rem;
+      }
+      .container {
+        max-width: 480px;
+        width: 100%;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2.5rem;
+      }
+      .logo {
+        width: 32px;
+        height: 32px;
+        background: var(--green);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        color: #000;
+      }
+      h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      .status-card {
+        background: var(--green-surface);
+        border: 1px solid var(--green-border);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .status-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--green);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .status-icon svg {
+        width: 16px;
+        height: 16px;
+        color: #000;
+      }
+      .status-text {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--green);
+      }
+      .status-sub {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin-top: 0.125rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem;
+      }
+      .card-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.375rem;
+      }
+      .card-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .card-full {
+        grid-column: 1 / -1;
+      }
+      .detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.875rem;
+      }
+      .detail:last-child {
+        border-bottom: none;
+      }
+      .detail-key {
+        color: var(--text-muted);
+      }
+      .detail-value {
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+      .footer {
+        margin-top: 2.5rem;
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">A</div>
-            <h1>Aperio</h1>
-        </div>
+      <div class="header">
+        <div class="logo">A</div>
+        <h1>Aperio</h1>
+      </div>
 
-        <div class="status-card">
-            <div class="status-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-            </div>
-            <div>
-                <div class="status-text">Operational</div>
-                <div class="status-sub">All systems running</div>
-            </div>
+      <div class="status-card">
+        <div class="status-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
         </div>
+        <div>
+          <div class="status-text">Operational</div>
+          <div class="status-sub">All systems running</div>
+        </div>
+      </div>
 
-        <div class="grid" id="stats"
-             hx-get="/status/stats"
-             hx-trigger="load, every 5s"
-             hx-swap="innerHTML">
-            <div class="card">
-                <div class="card-label">Notes</div>
-                <div class="card-value">{{ note_count }}</div>
-            </div>
-            <div class="card">
-                <div class="card-label">Folders</div>
-                <div class="card-value">{{ folder_count }}</div>
-            </div>
-            <div class="card card-full">
-                <div class="card-label">Details</div>
-                <div class="detail">
-                    <span class="detail-key">Uptime</span>
-                    <span class="detail-value">{{ uptime }}</span>
-                </div>
-                <div class="detail">
-                    <span class="detail-key">Vault</span>
-                    <span class="detail-value">{{ vault_path }}</span>
-                </div>
-                <div class="detail">
-                    <span class="detail-key">Sync</span>
-                    <span class="detail-value">{{ sync_status }}</span>
-                </div>
-                <div class="detail">
-                    <span class="detail-key">Last modified</span>
-                    <span class="detail-value">{{ last_modified }}</span>
-                </div>
-                <div class="detail">
-                    <span class="detail-key">Auth</span>
-                    <span class="detail-value">{{ auth_status }}</span>
-                </div>
-            </div>
+      <div
+        class="grid"
+        id="stats"
+        hx-get="/status/stats"
+        hx-trigger="load, every 5s"
+        hx-swap="innerHTML"
+      >
+        <div class="card">
+          <div class="card-label">Notes</div>
+          <div class="card-value">{{ note_count }}</div>
         </div>
+        <div class="card">
+          <div class="card-label">Folders</div>
+          <div class="card-value">{{ folder_count }}</div>
+        </div>
+        <div class="card card-full">
+          <div class="card-label">Details</div>
+          <div class="detail">
+            <span class="detail-key">Uptime</span>
+            <span class="detail-value">{{ uptime }}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-key">Vault</span>
+            <span class="detail-value">{{ vault_path }}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-key">Sync</span>
+            <span class="detail-value">{{ sync_status }}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-key">Last modified</span>
+            <span class="detail-value">{{ last_modified }}</span>
+          </div>
+          <div class="detail">
+            <span class="detail-key">Auth</span>
+            <span class="detail-value">{{ auth_status }}</span>
+          </div>
+        </div>
+      </div>
 
-        <div class="footer">
-            Aperio v{{ version }}
-        </div>
+      <div class="footer">Aperio {{ version }}</div>
     </div>
-</body>
+  </body>
 </html>
