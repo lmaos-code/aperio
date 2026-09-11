@@ -125,14 +125,11 @@ podDisruptionBudget:
   enabled: false
   minAvailable: 1
 
-# -- PersistentVolumeClaim for vault storage (RWX required for multiple aperio replicas)
+# -- PersistentVolumeClaim for vault storage (RWX required for aperio + sync)
 persistence:
   enabled: true
   # -- Storage class name (uses default if not set)
   storageClass: ""
-  # -- PVC access modes
-  accessModes:
-    - ReadWriteOnce
   # -- PVC size
   size: 10Gi
 
