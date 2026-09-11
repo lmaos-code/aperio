@@ -134,6 +134,7 @@ The server publishes [RFC 9728](https://datatracker.ietf.org/doc/rfc9728/) Prote
 
 ## Roadmap - Soon™
 - [ ] Semantic Search for your Agent trough coupled RAG-System with Aperio
+- [ ] Single-pod mode (sidecar) — run Aperio + sync in one pod so `ReadWriteOnce` storage works, enabling clusters without RWX support
 
 
 ## Development
